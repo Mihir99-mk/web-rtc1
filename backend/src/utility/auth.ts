@@ -1,8 +1,12 @@
 import { sign } from "jsonwebtoken";
-import { Users } from "../types/types";
+import { User } from "../types/types";
 
-export const createAccessToken = (user: Users): string => {
+export const createAccessToken = (user: User): string => {
   try {
+    if (!user || !user.id) {
+      throw new Error("Invalid user object. Missing 'id' property.");
+    }
+
     return sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET!, {
       expiresIn: "15m"
     });
@@ -12,8 +16,12 @@ export const createAccessToken = (user: Users): string => {
   }
 };
 
-export const createRefreshToken = (user: Users): string => {
+export const createRefreshToken = (user: User): string => {
   try {
+    if (!user || !user.id) {
+      throw new Error("Invalid user object. Missing 'id' property.");
+    }
+
     return sign({ userId: user.id }, process.env.REFRESH_TOKEN_SECRET!, {
       expiresIn: "7d"
     });

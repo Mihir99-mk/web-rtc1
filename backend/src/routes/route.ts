@@ -1,8 +1,10 @@
 import express, { Request, Response } from "express";
-import { Users } from "src/types/types";
+import { User, Users } from "src/types/types";
 import { PrismaClient } from "@prisma/client";
 import { createAccessToken, createRefreshToken } from "../utility/auth";
 import { refreshToken } from "../utility/refreshToken";
+
+
 
 import { verify } from "jsonwebtoken";
 
@@ -82,19 +84,24 @@ route.post("/signin", async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findFirst({
       where: {
-        AND: {
-          email: users.email,
-          password: users.password,
-        },
+        email: users.email,
+        password: users.password,
       },
-    });
+    }) as User;
 
+    if (!user) {
+      return res.status(401).json({
+        error: "Login failed",
+        details: "Invalid email or password",
+      });
+    }
 
-    res.status(201).json({user:user, token:createAccessToken(user as Users)});
+    res.status(201).json({ user: user, token: createAccessToken(user) });
   } catch (error) {
-    res.status(400).json({
-      error: "Login failed",
-      details: error.details,
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
     });
   }
 });
+
